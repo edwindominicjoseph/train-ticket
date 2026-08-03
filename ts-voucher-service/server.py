@@ -98,7 +98,7 @@ class GetVoucherHandler(tornado.web.RequestHandler):
 
 def make_app():
     return tornado.web.Application([
-        (r"/getVoucher", GetVoucherHandler)
+        (r"/api/v1/voucherservice/vouchers", GetVoucherHandler)
     ])
 
 def initDatabase():
@@ -164,4 +164,3 @@ if __name__ == "__main__":
     tornado.ioloop.IOLoop.current().start()
 
 
-    

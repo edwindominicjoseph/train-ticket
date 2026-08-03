@@ -224,14 +224,6 @@ services:
       networks:
           - my-network
 
-#  ts-ticketinfo-service:
-#        image: codewisdom/ts-ticketinfo-service-with-jaeger:v1
-#        restart: always
-#        ports:
-#          - 15681:15681
-#        networks:
-#          - my-network
-
   ts-price-service:
         image: codewisdom/ts-price-service-with-jaeger:v1
         restart: always
@@ -355,18 +347,13 @@ services:
         networks:
           - my-network
 
-#  ts-ticket-office-service:
-#        image: codewisdom/ts-ticket-office-service-with-jaeger:v1
-#        restart: always
-#        ports:
-#          - 16108:16108
-#        networks:
-#          - my-network
-#
-#  ts-ticket-office-mongo:
-#          image: mongo
-#          networks:
-#            - my-network
+  ts-ticket-office-service:
+    image: codewisdom/ts-ticket-office-service-with-jaeger:v1
+    restart: always
+    ports:
+      - 16108:16108
+    networks:
+      - my-network
 
   ts-news-service:
     image: codewisdom/ts-news-service-with-jaeger:v1
@@ -401,19 +388,6 @@ services:
             - /var/lib/mysql
           networks:
             - my-network
-
-#  ts-food-map-service:
-#        image: codewisdom/ts-food-map-service-with-jaeger:v1
-#        restart: always
-#        ports:
-#          - 18855:18855
-#        networks:
-#          - my-network
-#
-#  ts-food-map-mongo:
-#          image: mongo
-#          networks:
-#            - my-network
 
   ts-route-plan-service:
           image: codewisdom/ts-route-plan-service-with-jaeger:v1
@@ -526,7 +500,7 @@ services:
 
 
   ts-delivery-service:
-    image: ${NAMESPACE}/ts-delivery-servicee-with-jaeger:v1
+    image: ${NAMESPACE}/ts-delivery-service-with-jaeger:v1
     restart: always
     ports:
       - 18808:18808
@@ -544,6 +518,14 @@ services:
     restart: always
     ports:
       - 18957:18957
+      networks:
+        - my-network
+
+  ts-wait-order-service:
+    image: ${NAMESPACE}/ts-wait-order-service-with-jaeger:v1
+    restart: always
+    ports:
+      - 17525:17525
     networks:
       - my-network
 
@@ -609,8 +591,5 @@ networks:
     my-network:
       # driver: overlay
       driver: bridge
-
-
-
 
 

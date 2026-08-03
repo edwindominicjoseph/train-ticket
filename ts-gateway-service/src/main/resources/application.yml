@@ -54,7 +54,8 @@ spring:
             - Path=/api/v1/users/**
 
         - id: avatar
-          uri: lb://${AVATAR_SERVICE_HOST:ts-avatar-service}
+          # Non-Java services do not register with Nacos; route to Kubernetes/Docker DNS directly.
+          uri: http://${AVATAR_SERVICE_HOST:ts-avatar-service}:${AVATAR_SERVICE_PORT:17001}
           predicates:
             - Path=/api/v1/avatar/**
 
@@ -97,6 +98,11 @@ spring:
           uri: lb://${FOOD_SERVICE_HOST:ts-food-service}
           predicates:
             - Path=/api/v1/foodservice/**
+
+        - id: food-delivery
+          uri: lb://${FOOD_DELIVERY_SERVICE_HOST:ts-food-delivery-service}
+          predicates:
+            - Path=/api/v1/fooddeliveryservice/**
 
         - id: inside-payment
           uri: lb://${INSIDE_PAYMENT_SERVICE_HOST:ts-inside-payment-service}
@@ -207,3 +213,25 @@ spring:
           uri: lb://${VERIFICATION_CODE_SERVICE_HOST:ts-verification-code-service}
           predicates:
             - Path=/api/v1/verifycode/**
+
+        - id: wait-order
+          uri: lb://${WAIT_ORDER_SERVICE_HOST:ts-wait-order-service}
+          predicates:
+            - Path=/api/v1/waitorderservice/**
+
+        - id: voucher
+          uri: http://${VOUCHER_SERVICE_HOST:ts-voucher-service}:${VOUCHER_SERVICE_PORT:16101}
+          predicates:
+            - Path=/api/v1/voucherservice/**
+
+        - id: news
+          uri: http://${NEWS_SERVICE_HOST:ts-news-service}:${NEWS_SERVICE_PORT:12862}
+          predicates:
+            - Path=/api/v1/newsservice/**
+
+        - id: ticket-office
+          uri: http://${TICKET_OFFICE_SERVICE_HOST:ts-ticket-office-service}:${TICKET_OFFICE_SERVICE_PORT:16108}
+          predicates:
+            - Path=/api/v1/ticketofficeservice/**
+          filters:
+            - RewritePath=/api/v1/ticketofficeservice/(?<segment>.*), /$\{segment}

@@ -1,4 +1,3 @@
-version: '3'
 services:
 
 #  rabbitmq:
@@ -224,14 +223,6 @@ services:
       networks:
           - my-network
 
-#  ts-ticketinfo-service:
-#        image: ${NAMESPACE}/ts-ticketinfo-service:${TAG}
-#        restart: always
-#        ports:
-#          - 15681:15681
-#        networks:
-#          - my-network
-
   ts-price-service:
         image: ${NAMESPACE}/ts-price-service:${TAG}
         restart: always
@@ -355,18 +346,13 @@ services:
         networks:
           - my-network
 
-#  ts-ticket-office-service:
-#        image: ${NAMESPACE}/ts-ticket-office-service:${TAG}
-#        restart: always
-#        ports:
-#          - 16108:16108
-#        networks:
-#          - my-network
-#
-#  ts-ticket-office-mongo:
-#          image: mongo
-#          networks:
-#            - my-network
+  ts-ticket-office-service:
+    image: ${NAMESPACE}/ts-ticket-office-service:${TAG}
+    restart: always
+    ports:
+      - 16108:16108
+    networks:
+      - my-network
 
   ts-news-service:
     image: ${NAMESPACE}/ts-news-service:${TAG}
@@ -401,19 +387,6 @@ services:
             - /var/lib/mysql
           networks:
             - my-network
-
-#  ts-food-map-service:
-#        image: ${NAMESPACE}/ts-food-map-service:${TAG}
-#        restart: always
-#        ports:
-#          - 18855:18855
-#        networks:
-#          - my-network
-#
-#  ts-food-map-mongo:
-#          image: mongo
-#          networks:
-#            - my-network
 
   ts-route-plan-service:
           image: ${NAMESPACE}/ts-route-plan-service:${TAG}
@@ -523,7 +496,7 @@ services:
       - my-network
 
   ts-delivery-service:
-    image: ${NAMESPACE}/ts-delivery-servicee:${TAG}
+    image: ${NAMESPACE}/ts-delivery-service:${TAG}
     restart: always
     ports:
       - 18808:18808
@@ -589,13 +562,17 @@ services:
     networks:
       - my-network
 
+  ts-wait-order-service:
+    image: ${NAMESPACE}/ts-wait-order-service:${TAG}
+    restart: always
+    ports:
+      - 17525:17525
+    networks:
+      - my-network
+
 
 networks:
     my-network:
       # driver: overlay
       driver: bridge
-
-
-
-
 
