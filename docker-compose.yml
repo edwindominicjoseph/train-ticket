@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   #  rabbitmq:
   #    image: rabbitmq:management
@@ -236,15 +234,6 @@ services:
       networks:
           - my-network
 
-  ts-ticketinfo-service:
-        build: ts-ticketinfo-service
-        image: ${IMG_REPO}/ts-ticketinfo-service:${IMG_TAG}
-        restart: always
-        ports:
-          - 15681:15681
-        networks:
-          - my-network
-
   ts-price-service:
         build: ts-price-service
         image: ${IMG_REPO}/ts-price-service:${IMG_TAG}
@@ -425,20 +414,6 @@ services:
           networks:
             - my-network
 
-  ts-food-map-service:
-        build: ts-food-map-service
-        image: ${IMG_REPO}/ts-food-map-service:${IMG_TAG}
-        restart: always
-        ports:
-          - 18855:18855
-        networks:
-          - my-network
-
-  ts-food-map-mongo:
-    image: mongo
-    networks:
-      - my-network
-
   ts-route-plan-service:
           build: ts-route-plan-service
           image: ${IMG_REPO}/ts-route-plan-service:${IMG_TAG}
@@ -548,10 +523,65 @@ services:
       - my-network
 
   ts-avatar-service:
-    image: ${NAMESPACE}/ts-avatar-service:${TAG}
+    build: ts-avatar-service
+    image: ${IMG_REPO}/ts-avatar-service:${IMG_TAG}
     restart: always
     ports:
       - 17001:17001
+    networks:
+      - my-network
+
+  ts-delivery-service:
+    build: ts-delivery-service
+    image: ${IMG_REPO}/ts-delivery-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 18808:18808
+    networks:
+      - my-network
+
+  ts-food-delivery-service:
+    build: ts-food-delivery-service
+    image: ${IMG_REPO}/ts-food-delivery-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 18957:18957
+    networks:
+      - my-network
+
+  ts-gateway-service:
+    build: ts-gateway-service
+    image: ${IMG_REPO}/ts-gateway-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 18888:18888
+    networks:
+      - my-network
+
+  ts-station-food-service:
+    build: ts-station-food-service
+    image: ${IMG_REPO}/ts-station-food-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 18855:18855
+    networks:
+      - my-network
+
+  ts-train-food-service:
+    build: ts-train-food-service
+    image: ${IMG_REPO}/ts-train-food-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 19999:19999
+    networks:
+      - my-network
+
+  ts-wait-order-service:
+    build: ts-wait-order-service
+    image: ${IMG_REPO}/ts-wait-order-service:${IMG_TAG}
+    restart: always
+    ports:
+      - 17525:17525
     networks:
       - my-network
 

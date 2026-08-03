@@ -14,6 +14,10 @@ build: clean-image package build-image
 package:
 	@mvn clean package -Dmaven.test.skip=true
 
+.PHONY: validate-inventory
+validate-inventory:
+	@python3 script/validate-service-inventory.py
+
 .PHONY: build-image
 build-image:
 	@hack/build-image.sh $(Repo) $(Tag)
