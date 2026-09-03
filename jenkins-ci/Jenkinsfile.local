@@ -23,7 +23,7 @@ spec:
       args: [cat]
       tty: true
     - name: kubectl
-      image: registry.k8s.io/kubectl:v1.36.1
+      image: alpine/k8s:1.36.1
       command: [sh, -c]
       args: [cat]
       tty: true
@@ -59,6 +59,7 @@ spec:
         stage('Policy checks') {
             steps {
                 container('python') {
+                    sh 'git config --global --add safe.directory "$WORKSPACE"'
                     sh 'python3 script/check-secrets.py'
                     sh 'python3 -m unittest discover -s script/tests -p "test_*.py"'
                     sh 'bash -n hack/deploy/*.sh deployment/local-test/*.sh deployment/local-platform/*.sh'
@@ -132,6 +133,7 @@ spec:
                 container('git') {
                     withCredentials([usernamePassword(credentialsId: 'github-train-ticket', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
                         sh '''
+                          git config --global --add safe.directory "$WORKSPACE"
                           git config user.name "Jenkins GitOps"
                           git config user.email "jenkins-gitops@local.invalid"
                           git add deployment/gitops/prod/kustomization.yaml
