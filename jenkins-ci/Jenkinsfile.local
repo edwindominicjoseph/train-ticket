@@ -32,6 +32,9 @@ spec:
       command: [sh, -c]
       args: [cat]
       tty: true
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
     - name: git
       image: alpine/git:2.49.1
       command: [sh, -c]
@@ -105,7 +108,9 @@ spec:
         stage('Deploy test') {
             steps {
                 container('kubectl') {
-                    sh 'kubectl -n "$TEST_NAMESPACE" set image deployment/ts-travel-service ts-travel-service="$TRAVEL_IMAGE"'
+                    sh '''kubectl set image --local -f deployment/local-test/travel.yaml \
+                        ts-travel-service="$TRAVEL_IMAGE" -o yaml | \
+                        kubectl apply -f -'''
                     sh 'kubectl -n "$TEST_NAMESPACE" rollout status deployment/ts-travel-service --timeout=300s'
                 }
             }
