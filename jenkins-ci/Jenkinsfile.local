@@ -85,7 +85,7 @@ spec:
                     sh '''
                       buildctl --addr "$BUILDKIT_HOST" build \
                         --frontend dockerfile.v0 \
-                        --local context=. \
+                        --local context=ts-travel-service \
                         --local dockerfile=ts-travel-service \
                         --opt filename=Dockerfile \
                         --output "type=image,name=$TRAVEL_IMAGE,push=true" \
