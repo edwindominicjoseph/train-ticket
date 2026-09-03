@@ -11,8 +11,8 @@ spring:
 
   datasource:
     url: jdbc:mysql://${INSIDE_PAYMENT_MYSQL_HOST:ts-inside-payment-mysql}:${INSIDE_PAYMENT_MYSQL_PORT:3306}/${INSIDE_PAYMENT_MYSQL_DATABASE:ts-inside-payment-mysql}?useSSL=false
-    username: ${INSIDE_PAYMENT_MYSQL_USER:root}
-    password: ${INSIDE_PAYMENT_MYSQL_PASSWORD:Abcd1234#}
+    username: ${INSIDE_PAYMENT_MYSQL_USER}
+    password: ${INSIDE_PAYMENT_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

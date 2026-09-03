@@ -11,8 +11,8 @@ spring:
     name: ts-travel2-service
   datasource:
     url: jdbc:mysql://${TRAVEL2_MYSQL_HOST:ts-travel2-mysql}:${TRAVEL2_MYSQL_PORT:3306}/${TRAVEL2_MYSQL_DATABASE:ts-travel2-mysql}?useSSL=false
-    username: ${TRAVEL2_MYSQL_USER:root}
-    password: ${TRAVEL2_MYSQL_PASSWORD:Abcd1234#}
+    username: ${TRAVEL2_MYSQL_USER}
+    password: ${TRAVEL2_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
