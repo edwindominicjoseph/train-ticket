@@ -1,0 +1,8 @@
+workflow-aggregator
+git
+credentials-binding
+junit
+pipeline-stage-view
+ws-cleanup
+kubernetes
+configuration-as-code

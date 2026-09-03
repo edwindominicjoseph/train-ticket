@@ -1,0 +1,154 @@
+pipeline {
+    agent {
+        kubernetes {
+            cloud 'local-kind'
+            defaultContainer 'jnlp'
+            yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins-agent
+  containers:
+    - name: maven
+      image: maven:3.9.9-eclipse-temurin-8
+      command: [cat]
+      tty: true
+    - name: python
+      image: python:3.12-bookworm
+      command: [cat]
+      tty: true
+    - name: buildctl
+      image: moby/buildkit:v0.25.1-rootless
+      command: [sh, -c]
+      args: [cat]
+      tty: true
+    - name: kubectl
+      image: registry.k8s.io/kubectl:v1.36.1
+      command: [sh, -c]
+      args: [cat]
+      tty: true
+    - name: curl
+      image: curlimages/curl:8.16.0
+      command: [sh, -c]
+      args: [cat]
+      tty: true
+    - name: git
+      image: alpine/git:2.49.1
+      command: [sh, -c]
+      args: [cat]
+      tty: true
+'''
+        }
+    }
+
+    environment {
+        REGISTRY = 'registry.registry.svc.cluster.local:5000'
+        BUILDKIT_HOST = 'tcp://buildkitd.buildkit.svc.cluster.local:1234'
+        TEST_NAMESPACE = 'train-ticket-test'
+    }
+
+    stages {
+        stage('Identify artifact') {
+            steps {
+                script {
+                    env.GIT_SHA = sh(script: 'git rev-parse --short=12 HEAD', returnStdout: true).trim()
+                    env.TRAVEL_IMAGE = "${env.REGISTRY}/ts-travel-service:${env.GIT_SHA}"
+                }
+            }
+        }
+        stage('Policy checks') {
+            steps {
+                container('python') {
+                    sh 'python3 script/check-secrets.py'
+                    sh 'python3 -m unittest discover -s script/tests -p "test_*.py"'
+                    sh 'bash -n hack/deploy/*.sh deployment/local-test/*.sh deployment/local-platform/*.sh'
+                    sh 'bash script/tests/test-gen-mysql-secret.sh'
+                }
+            }
+        }
+        stage('Build and unit test') {
+            steps {
+                container('maven') {
+                    sh 'mvn --batch-mode -pl ts-travel-service -am clean verify'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Rootless image build') {
+            steps {
+                container('buildctl') {
+                    sh '''
+                      buildctl --addr "$BUILDKIT_HOST" build \
+                        --frontend dockerfile.v0 \
+                        --local context=. \
+                        --local dockerfile=ts-travel-service \
+                        --opt filename=Dockerfile \
+                        --output "type=image,name=$TRAVEL_IMAGE,push=true" \
+                        --metadata-file image-metadata.json
+                    '''
+                }
+                container('python') {
+                    script {
+                        env.IMAGE_DIGEST = sh(
+                            script: "python3 -c \"import json; print(json.load(open('image-metadata.json'))['containerimage.digest'])\"",
+                            returnStdout: true
+                        ).trim()
+                    }
+                }
+            }
+        }
+        stage('Deploy test') {
+            steps {
+                container('kubectl') {
+                    sh 'kubectl -n "$TEST_NAMESPACE" set image deployment/ts-travel-service ts-travel-service="$TRAVEL_IMAGE"'
+                    sh 'kubectl -n "$TEST_NAMESPACE" rollout status deployment/ts-travel-service --timeout=300s'
+                }
+            }
+        }
+        stage('Test smoke checks') {
+            steps {
+                container('curl') {
+                    sh 'curl --fail --silent --show-error --max-time 10 http://ts-travel-service.train-ticket-test.svc.cluster.local:12346/api/v1/travelservice/welcome'
+                    sh 'curl --fail --silent --show-error --max-time 10 http://ts-travel-service.train-ticket-test.svc.cluster.local:12346/api/v1/travelservice/trips >/dev/null'
+                }
+            }
+        }
+        stage('Approve production') {
+            when { branch 'master' }
+            steps {
+                input message: "Promote ${TRAVEL_IMAGE}@${IMAGE_DIGEST} to local production?", ok: 'Promote'
+            }
+        }
+        stage('Update GitOps production') {
+            when { branch 'master' }
+            steps {
+                container('python') {
+                    sh 'python3 script/promote-image.py --digest "$IMAGE_DIGEST" deployment/gitops/prod/kustomization.yaml'
+                }
+                container('git') {
+                    withCredentials([usernamePassword(credentialsId: 'github-train-ticket', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                          git config user.name "Jenkins GitOps"
+                          git config user.email "jenkins-gitops@local.invalid"
+                          git add deployment/gitops/prod/kustomization.yaml
+                          git commit -m "chore(gitops): promote travel $GIT_SHA [skip ci]"
+                          git push "https://$GITHUB_USER:$GITHUB_TOKEN@github.com/edwindominicjoseph/train-ticket.git" HEAD:master
+                        '''
+                    }
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            container('kubectl') {
+                sh 'kubectl -n "$TEST_NAMESPACE" get pods -o wide || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" logs deployment/ts-travel-service --tail=200 || true'
+            }
+        }
+    }
+}
