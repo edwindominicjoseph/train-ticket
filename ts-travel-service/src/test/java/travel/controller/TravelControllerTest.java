@@ -7,6 +7,7 @@ import edu.fudan.common.entity.TripAllDetailInfo;
 import edu.fudan.common.entity.TripInfo;
 import edu.fudan.common.entity.TripResponse;
 import edu.fudan.common.util.Response;
+import edu.fudan.common.util.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -134,8 +135,9 @@ public class TravelControllerTest {
 
     @Test
     public void testQueryInfo2() throws Exception {
-        TripInfo info = new TripInfo("startPlace", "endPlace", "");
-        Mockito.when(service.query(Mockito.any(TripInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
+        TripInfo info = new TripInfo("startPlace", "endPlace",
+                StringUtils.Date2String(new Date(System.currentTimeMillis() + 86400000)));
+        Mockito.when(service.queryByBatch(Mockito.any(TripInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
         String requestJson = JSONObject.toJSONString(info);
         String result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/travelservice/trips/left").contentType(MediaType.APPLICATION_JSON).content(requestJson))
                 .andExpect(MockMvcResultMatchers.status().isOk())
