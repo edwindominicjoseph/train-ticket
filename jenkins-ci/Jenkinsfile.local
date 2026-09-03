@@ -32,6 +32,9 @@ spec:
       command: [sh, -c]
       args: [cat]
       tty: true
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
     - name: git
       image: alpine/git:2.49.1
       command: [sh, -c]
