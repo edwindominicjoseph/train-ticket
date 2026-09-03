@@ -17,12 +17,16 @@ import java.util.Date;
 @Component
 public class JWTProvider {
 
-    private String secretKey = "secret";
+    private String secretKey;
 
     private long validityInMilliseconds = 3600000;
 
     @PostConstruct
     protected void init() {
+        secretKey = System.getenv("JWT_SECRET");
+        if (secretKey == null || secretKey.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be set and contain at least 32 characters");
+        }
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 

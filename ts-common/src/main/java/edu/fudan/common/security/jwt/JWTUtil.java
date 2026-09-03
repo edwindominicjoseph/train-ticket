@@ -28,7 +28,15 @@ public class JWTUtil {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTUtil.class);
-    private static String secretKey = Base64.getEncoder().encodeToString("secret".getBytes());
+    private static final String secretKey = loadSecretKey();
+
+    private static String loadSecretKey() {
+        String value = System.getenv("JWT_SECRET");
+        if (value == null || value.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be set and contain at least 32 characters");
+        }
+        return Base64.getEncoder().encodeToString(value.getBytes());
+    }
 
 
     public static Authentication getJWTAuthentication(ServletRequest request) {
