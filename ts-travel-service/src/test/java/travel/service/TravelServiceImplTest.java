@@ -20,6 +20,7 @@ import travel.entity.Trip;
 import travel.repository.TripRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Date;
 
 @RunWith(JUnit4.class)
@@ -214,33 +215,52 @@ public class TravelServiceImplTest {
         gtdi.setTripId("Z1255");
         gtdi.setFrom("from_station");
         gtdi.setTo("to_station");
-        gtdi.setTravelDate(StringUtils.Date2String(new Date(System.currentTimeMillis() - 86400000)));
+        gtdi.setTravelDate(StringUtils.Date2String(new Date(System.currentTimeMillis() + 86400000)));
 
         Trip trip = new Trip();
+        trip.setTripId(new TripId("Z1255"));
         trip.setRouteId("route_id");
+        trip.setStartTime(StringUtils.Date2String(new Date()));
         Mockito.when(repository.findByTripId(Mockito.any(TripId.class))).thenReturn(trip);
 
-        //mock queryForStationId()
-        Response<String> response1 = new Response<>(null, null, "");
-        ResponseEntity<Response<String>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        Route route = new Route();
+        ArrayList<String> stations = new ArrayList<>();
+        stations.add("from_station");
+        stations.add("to_station");
+        route.setStations(stations);
+        ArrayList<Integer> distances = new ArrayList<>();
+        distances.add(0);
+        distances.add(100);
+        route.setDistances(distances);
+
+        TrainType trainType = new TrainType("test-train", 100, 50, 100);
+        HashMap<String, String> prices = new HashMap<>();
+        prices.put("confortClass", "10.00");
+        prices.put("economyClass", "5.00");
+
+        TravelResult travelResult = new TravelResult();
+        travelResult.setStatus(true);
+        travelResult.setRoute(route);
+        travelResult.setTrainType(trainType);
+        travelResult.setPrices(prices);
+
+        Response<TravelResult> basicResponse = new Response<>(1, null, travelResult);
+        ResponseEntity<Response> basicResponseEntity = new ResponseEntity<>(basicResponse, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
-                Mockito.any(HttpMethod.class),
+                Mockito.contains("/api/v1/basicservice/basic/travel"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class)))
+                .thenReturn(basicResponseEntity);
+
+        Response<Integer> seatResponse = new Response<>(1, null, 25);
+        ResponseEntity<Response<Integer>> seatResponseEntity = new ResponseEntity<>(seatResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/seatservice/seats/left_tickets"),
+                Mockito.eq(HttpMethod.POST),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1);
-
-        //mock getRouteByRouteId()
-        Route route = new Route();
-        route.setStations(new ArrayList<>());
-        Response response2 = new Response(1, null, route);
-        ResponseEntity<Response> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
-        Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
-                Mockito.any(HttpMethod.class),
-                Mockito.any(HttpEntity.class),
-                Mockito.any(Class.class)))
-                .thenReturn(re2);
+                .thenReturn(seatResponseEntity);
         Response result = travelServiceImpl.getTripAllDetailInfo(gtdi, headers);
         Assert.assertEquals("Success", result.getMsg());
     }
