@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: train-ticket
+  namespace: argocd
+spec:
+  description: Local train-ticket production GitOps boundary
+  sourceRepos:
+    - https://github.com/edwindominicjoseph/train-ticket.git
+  destinations:
+    - namespace: train-ticket-prod
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet

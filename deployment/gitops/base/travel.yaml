@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ts-travel-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ts-travel-service
+  template:
+    metadata:
+      labels:
+        app: ts-travel-service
+    spec:
+      containers:
+        - name: ts-travel-service
+          image: ts-travel-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 12346
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://ts-travel-mysql:3306/ts-travel-mysql?useSSL=false&allowPublicKeyRetrieval=true
+            - name: TRAVEL_MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-mysql
+                  key: username
+            - name: TRAVEL_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-mysql
+                  key: password
+            - name: SPRING_CLOUD_NACOS_DISCOVERY_ENABLED
+              value: "false"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-runtime
+                  key: jwt-secret
+          readinessProbe:
+            httpGet:
+              path: /api/v1/travelservice/welcome
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/v1/travelservice/welcome
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ts-travel-service
+spec:
+  selector:
+    app: ts-travel-service
+  ports:
+    - name: http
+      port: 12346
+      targetPort: http
