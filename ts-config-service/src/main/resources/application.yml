@@ -7,8 +7,8 @@ spring:
     name: ts-config-service
   datasource:
     url: jdbc:mysql://${CONFIG_MYSQL_HOST:ts-config-mysql}:${CONFIG_MYSQL_PORT:3306}/${CONFIG_MYSQL_DATABASE:ts-config-mysql}?useSSL=false
-    username: ${CONFIG_MYSQL_USER:root}
-    password: ${CONFIG_MYSQL_PASSWORD:root}
+    username: ${CONFIG_MYSQL_USER}
+    password: ${CONFIG_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

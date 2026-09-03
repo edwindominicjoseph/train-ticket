@@ -1487,6 +1487,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-notification-email
+                  key: password
             - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
               value: "skywalking:11800"
             - name: SW_GRPC_LOG_SERVER_HOST

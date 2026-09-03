@@ -130,21 +130,11 @@ def initDatabase():
 
 def initMysqlConfig():
     global mysql_config
-    host = "ts-voucher-mysql"
-    port = 3306
-    user = "root"
-    password = "Abcd1234#"
-    db = "ts-voucher-mysql"
-    if(os.getenv("VOUCHER_MYSQL_HOST") is not None):
-        host = os.getenv("VOUCHER_MYSQL_HOST")
-    if(os.getenv("VOUCHER_MYSQL_PORT") is not None):
-        port = int(os.getenv("VOUCHER_MYSQL_PORT"))
-    if(os.getenv("VOUCHER_MYSQL_USER") is not None):
-        user = os.getenv("VOUCHER_MYSQL_USER")
-    if(os.getenv("VOUCHER_MYSQL_PASSWORD") is not None):
-        password = os.getenv("VOUCHER_MYSQL_PASSWORD")
-    if(os.getenv("VOUCHER_MYSQL_DATABASE") is not None):
-        db = os.getenv("VOUCHER_MYSQL_DATABASE")
+    host = os.getenv("VOUCHER_MYSQL_HOST", "ts-voucher-mysql")
+    port = int(os.getenv("VOUCHER_MYSQL_PORT", "3306"))
+    user = os.environ["VOUCHER_MYSQL_USER"]
+    password = os.environ["VOUCHER_MYSQL_PASSWORD"]
+    db = os.getenv("VOUCHER_MYSQL_DATABASE", "ts-voucher-mysql")
 
     mysql_config = {
         'host': host,
@@ -162,5 +152,4 @@ if __name__ == "__main__":
     app = make_app()
     app.listen(16101)
     tornado.ioloop.IOLoop.current().start()
-
 

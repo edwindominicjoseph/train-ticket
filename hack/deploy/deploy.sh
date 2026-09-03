@@ -97,4 +97,5 @@ if [ $# == 2 ]; then
   argNone=0
   parse_args $args
 fi
+require_deploy_secrets
 deploy

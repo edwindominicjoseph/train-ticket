@@ -13,7 +13,7 @@ spring:
     host: smtp.163.com
     port: 465
     username: ${email_address:trainticket_notify@163.com}
-    password: ${email_password:GZKSCXHBOLKMCLDQ}
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -25,8 +25,8 @@ spring:
             required: true
   datasource:
     url: jdbc:mysql://${NOTIFICATION_MYSQL_HOST:ts-notification-mysql}:${NOTIFICATION_MYSQL_PORT:3306}/${NOTIFICATION_MYSQL_DATABASE:ts-notification-mysql}?useSSL=false
-    username: ${NOTIFICATION_MYSQL_USER:root}
-    password: ${NOTIFICATION_MYSQL_PASSWORD:root}
+    username: ${NOTIFICATION_MYSQL_USER}
+    password: ${NOTIFICATION_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

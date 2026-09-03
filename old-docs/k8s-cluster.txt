@@ -70,7 +70,6 @@ kubectl delete node centos-minion-2
 
 
 join: (slave)
-kubeadm join --token 58c15f.e98c48fa25e26132 10.141.211.171:6443 --discovery-token-ca-cert-hash sha256:46448ae9369e3a803ef7078bc4b9de9f0855d84f309f9cf25ff76fdef8538ce2
+kubeadm join --token <bootstrap-token> <control-plane-host>:6443 --discovery-token-ca-cert-hash sha256:<ca-cert-hash>
 kubeadm reset
-
 
