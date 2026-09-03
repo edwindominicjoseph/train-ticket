@@ -1,0 +1,30 @@
+services:
+  jenkins:
+    build:
+      context: .
+    image: train-ticket/jenkins-local:latest
+    container_name: train-ticket-jenkins
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:50000:50000"
+    environment:
+      JAVA_OPTS: -Djenkins.install.runSetupWizard=true
+      CASC_JENKINS_CONFIG: /var/jenkins_home/casc/jenkins.yaml
+      JENKINS_K8S_TOKEN: ${JENKINS_K8S_TOKEN:?set JENKINS_K8S_TOKEN before starting Jenkins}
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - ./jenkins.yaml:/var/jenkins_home/casc/jenkins.yaml:ro
+    networks:
+      default: {}
+      kind:
+        ipv4_address: 172.18.0.10
+
+volumes:
+  jenkins-home:
+    name: train-ticket-jenkins-home
+
+networks:
+  kind:
+    external: true
+    name: kind

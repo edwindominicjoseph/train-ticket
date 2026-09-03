@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: travel-prod
+  namespace: argocd
+spec:
+  project: train-ticket
+  source:
+    repoURL: https://github.com/edwindominicjoseph/train-ticket.git
+    targetRevision: master
+    path: deployment/gitops/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: train-ticket-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

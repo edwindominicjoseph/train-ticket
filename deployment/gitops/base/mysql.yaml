@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ts-travel-mysql
+spec:
+  selector:
+    app: ts-travel-mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ts-travel-mysql
+spec:
+  serviceName: ts-travel-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ts-travel-mysql
+  template:
+    metadata:
+      labels:
+        app: ts-travel-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - name: mysql
+              containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: ts-travel-mysql
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-mysql
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-mysql
+                  key: password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-mysql
+                  key: root-password
+          readinessProbe:
+            exec:
+              command: [sh, -c, 'mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"']
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 2Gi

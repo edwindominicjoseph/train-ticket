@@ -1,0 +1,23 @@
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              id: jenkins-kind-token
+              description: Restricted token for ephemeral agents in local kind
+              scope: GLOBAL
+              secret: "${JENKINS_K8S_TOKEN}"
+
+jenkins:
+  clouds:
+    - kubernetes:
+        name: local-kind
+        serverUrl: https://train-ticket-dev-control-plane:6443
+        skipTlsVerify: true
+        namespace: jenkins-agents
+        credentialsId: jenkins-kind-token
+        jenkinsUrl: http://172.18.0.10:8080
+        jenkinsTunnel: 172.18.0.10:50000
+        containerCapStr: "10"
+        connectTimeout: 10
+        readTimeout: 20

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-smoke-context
+  namespace: buildkit
+data:
+  Dockerfile: |
+    FROM busybox:1.36.1
+    CMD ["sh", "-c", "echo platform-smoke-ok"]
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: platform-smoke-build
+  namespace: buildkit
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: buildctl
+          image: moby/buildkit:v0.25.1-rootless
+          command: [buildctl]
+          args:
+            - --addr
+            - tcp://buildkitd.buildkit.svc.cluster.local:1234
+            - build
+            - --frontend
+            - dockerfile.v0
+            - --local
+            - context=/workspace
+            - --local
+            - dockerfile=/workspace
+            - --output
+            - type=image,name=registry.registry.svc.cluster.local:5000/platform-smoke:latest,push=true
+          volumeMounts:
+            - name: context
+              mountPath: /workspace
+      volumes:
+        - name: context
+          configMap:
+            name: platform-smoke-context
