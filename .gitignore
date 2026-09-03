@@ -25,11 +25,18 @@
 __pycache__/
 dist/
 *.pyc
+script/tests/tmp*/
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
 ENV/
+
+# Generated deployment files can contain plaintext Secret values.
+deployment/kubernetes-manifests/quickstart-k8s/yamls/secret.yaml
+deployment/kubernetes-manifests/quickstart-k8s/yamls/deploy.yaml
+deployment/kubernetes-manifests/quickstart-k8s/yamls/sw_deploy.yaml
 env.bak/
 venv.bak/
-

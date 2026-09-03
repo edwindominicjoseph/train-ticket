@@ -12,7 +12,7 @@ rabbitmqCharts=deployment/kubernetes-manifests/quickstart-k8s/charts/rabbitmq
 nacosDBRelease="nacosdb"
 nacosDBHost="${nacosDBRelease}-mysql-leader"
 nacosDBUser="nacos"
-nacosDBPass="Abcd1234#"
+nacosDBPass=""
 nacosDBName="nacos"
 
 # nacos server parameters
@@ -23,8 +23,19 @@ rabbitmqRelease="rabbitmq"
 
 # mysql of train ticket parameters
 tsUser="ts"
-tsPassword="Ts_123456"
+tsPassword=""
 tsDB="ts"
+
+
+function require_deploy_secrets {
+  : "${NACOS_DB_PASSWORD:?NACOS_DB_PASSWORD is required}"
+  : "${TS_MYSQL_PASSWORD:?TS_MYSQL_PASSWORD is required}"
+  : "${JWT_SECRET:?JWT_SECRET is required}"
+  : "${EMAIL_PASSWORD:?EMAIL_PASSWORD is required}"
+
+  nacosDBPass="$NACOS_DB_PASSWORD"
+  tsPassword="$TS_MYSQL_PASSWORD"
+}
 
 
 function deploy_infrastructures {
@@ -114,4 +125,3 @@ function deploy_tt_dp_sw {
   kubectl apply -f deployment/kubernetes-manifests/quickstart-k8s/yamls/sw_deploy.yaml -n $namespace > /dev/null
   echo "End deployment Step <3/3>----------------------------------------------------------------------"
 }
-

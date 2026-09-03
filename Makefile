@@ -18,6 +18,10 @@ package:
 validate-inventory:
 	@python3 script/validate-service-inventory.py
 
+.PHONY: security-check
+security-check:
+	@python3 script/check-secrets.py
+
 .PHONY: build-image
 build-image:
 	@hack/build-image.sh $(Repo) $(Tag)

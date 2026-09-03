@@ -1,0 +1,33 @@
+name: Security checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Reject embedded credentials
+        run: python3 script/check-secrets.py
+      - name: Test runtime secret injection
+        run: python3 -m unittest discover -s script/tests -v
+      - name: Validate deployment shell syntax
+        run: bash -n hack/deploy/*.sh
+      - name: Test deployment Secret generation
+        run: bash script/tests/test-gen-mysql-secret.sh
+      - name: Scan the working tree with Gitleaks
+        run: >-
+          docker run --rm
+          -v "$PWD:/repo"
+          zricethezav/gitleaks:v8.24.3
+          dir /repo --no-banner --redact
+      - name: Validate service inventory
+        run: python3 script/validate-service-inventory.py

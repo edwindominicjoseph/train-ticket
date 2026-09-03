@@ -927,6 +927,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-notification-email
+                  key: password
           envFrom:
             - secretRef:
                 name: ts-notification-mysql
