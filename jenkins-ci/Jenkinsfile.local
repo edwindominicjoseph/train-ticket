@@ -23,7 +23,7 @@ spec:
       args: [cat]
       tty: true
     - name: kubectl
-      image: registry.k8s.io/kubectl:v1.36.1
+      image: alpine/k8s:1.36.1
       command: [sh, -c]
       args: [cat]
       tty: true
