@@ -6,4 +6,4 @@ resources:
 images:
   - name: ts-travel-service
     newName: registry.registry.svc.cluster.local:5000/ts-travel-service
-    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    digest: sha256:172d01831f1ba2f63fd7b1e79ca39c90fe55c70eeeddf950f09fbd5af3e96fc3
