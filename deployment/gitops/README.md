@@ -7,18 +7,19 @@ permission to modify production workloads directly.
 
 ## Bootstrap secrets
 
-Secrets deliberately stay out of Git. Export strong local values, then run:
+Secrets deliberately stay out of Git. For a local WSL environment, store them
+in a WSL-native file that is readable only by your account:
 
 ```bash
-export TRAVEL_MYSQL_USER=ts
-export TRAVEL_MYSQL_PASSWORD='<generated value>'
-export TRAVEL_MYSQL_ROOT_PASSWORD='<different generated value>'
-export JWT_SECRET='<at least 32 random bytes>'
-./deployment/gitops/bootstrap-prod-secrets.sh
+./deployment/gitops/bootstrap-prod-secrets.sh --init
 ```
 
-The script sends values directly to the Kubernetes API. It writes no secret
-manifest to disk and is safe to rerun when rotating values.
+The `--init` option creates the file only when it does not already exist. The
+script validates its permissions, loads the variables, and sends their values
+directly to the Kubernetes API. It writes no Kubernetes Secret manifest to disk
+and is safe to rerun when applying existing values. Set
+`TRAIN_TICKET_PROD_ENV_FILE` to use a different file. Explicitly exported
+variables continue to work when the file does not exist.
 
 ## Enable reconciliation
 
