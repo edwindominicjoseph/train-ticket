@@ -2,7 +2,7 @@
 
 ## Secrets
 
-Never commit passwords, API keys, signing keys, private keys, access tokens, or
+Never commit passwords, API keys, signing keys, private keys, access tokens, or_
 generated Kubernetes Secret manifests. Copy `.env.example` to an ignored local
 file and replace every placeholder with a development-only value.
 
