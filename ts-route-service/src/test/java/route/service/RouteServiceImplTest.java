@@ -17,7 +17,6 @@ import route.repository.RouteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RunWith(JUnit4.class)
@@ -48,22 +47,22 @@ public class RouteServiceImplTest {
         RouteInfo info = new RouteInfo("id", "start_station", "end_station", "shanghai", "5");
         Mockito.when(routeRepository.save(Mockito.any(Route.class))).thenReturn(null);
         Response result = routeServiceImpl.createAndModify(info, headers);
-        Assert.assertEquals("Save and Modify success", result.getMsg());
+        Assert.assertEquals("Save Success", result.getMsg());
     }
 
     @Test
     public void testCreateAndModify3() {
         RouteInfo info = new RouteInfo("id123456789", "start_station", "end_station", "shanghai", "5");
-        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(null);
         Mockito.when(routeRepository.save(Mockito.any(Route.class))).thenReturn(null);
         Response result = routeServiceImpl.createAndModify(info, headers);
-        Assert.assertEquals("Save and Modify success", result.getMsg());
+        Assert.assertEquals("Modify success", result.getMsg());
     }
 
     @Test
     public void testDeleteRoute1() {
         Mockito.doNothing().doThrow(new RuntimeException()).when(routeRepository).removeRouteById(Mockito.anyString());
-        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(null);
         Response result = routeServiceImpl.deleteRoute("route_id", headers);
         Assert.assertEquals(new Response<>(1, "Delete Success", "route_id"), result);
     }
@@ -71,15 +70,15 @@ public class RouteServiceImplTest {
     @Test
     public void testDeleteRoute2() {
         Route route = new Route();
-        Mockito.doNothing().when(routeRepository).removeRouteById(Mockito.anyString());
-        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(route));
+        Mockito.doNothing().doThrow(new RuntimeException()).when(routeRepository).removeRouteById(Mockito.anyString());
+        Mockito.when(routeRepository.findById(Mockito.anyString()).get()).thenReturn(route);
         Response result = routeServiceImpl.deleteRoute("route_id", headers);
         Assert.assertEquals(new Response<>(0, "Delete failed, Reason unKnown with this routeId", "route_id"), result);
     }
 
     @Test
     public void testGetRouteById1() {
-        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(null);
         Response result = routeServiceImpl.getRouteById("route_id", headers);
         Assert.assertEquals(new Response<>(0, "No content with the routeId", null), result);
     }
@@ -87,7 +86,7 @@ public class RouteServiceImplTest {
     @Test
     public void testGetRouteById2() {
         Route route = new Route();
-        Mockito.when(routeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(route));
+        Mockito.when(routeRepository.findById(Mockito.anyString()).get()).thenReturn(route);
         Response result = routeServiceImpl.getRouteById("route_id", headers);
         Assert.assertEquals(new Response<>(1, "Success", route), result);
     }

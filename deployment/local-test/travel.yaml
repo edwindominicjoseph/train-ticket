@@ -40,9 +40,7 @@ spec:
                   name: ts-travel-mysql
                   key: password
             - name: SPRING_CLOUD_NACOS_DISCOVERY_ENABLED
-              value: "true"
-            - name: NACOS_ADDRS
-              value: "nacos-0.nacos-headless.default.svc.cluster.local:8848"
+              value: "false"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
