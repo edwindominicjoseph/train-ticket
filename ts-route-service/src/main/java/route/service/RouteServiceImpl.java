@@ -84,7 +84,7 @@ public class RouteServiceImpl implements RouteService {
             RouteServiceImpl.LOGGER.error("[getRouteById][Find route error][Route not found][RouteId: {}]",routeId);
             return new Response<>(0, "No content with the routeId", null);
         } else {
-            return new Response<>(1, success, route);
+            return new Response<>(1, success, route.get());
         }
 
     }

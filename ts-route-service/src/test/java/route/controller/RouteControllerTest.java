@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -28,7 +29,7 @@ import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(RouteController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, RestTemplateAutoConfiguration.class})
 public class RouteControllerTest {
 
     @MockBean
