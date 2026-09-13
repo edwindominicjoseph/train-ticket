@@ -1,48 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ts-travel-service
+  name: ts-route-service
   namespace: train-ticket-test
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ts-travel-service
+      app: ts-route-service
   template:
     metadata:
       labels:
-        app: ts-travel-service
+        app: ts-route-service
     spec:
       containers:
-        - name: ts-travel-service
-          image: ts-travel-service:local
+        - name: ts-route-service
+          image: ts-route-service:local
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
-              containerPort: 12346
+              containerPort: 11178
           env:
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://ts-travel-mysql:3306/ts-travel-mysql?useSSL=false&allowPublicKeyRetrieval=true
-            - name: TRAVEL_MYSQL_HOST
-              value: ts-travel-mysql
-            - name: TRAVEL_MYSQL_PORT
+            - name: ROUTE_MYSQL_HOST
+              value: ts-route-mysql
+            - name: ROUTE_MYSQL_PORT
               value: "3306"
-            - name: TRAVEL_MYSQL_DATABASE
-              value: ts-travel-mysql
-            - name: TRAVEL_MYSQL_USER
+            - name: ROUTE_MYSQL_DATABASE
+              value: ts-route-mysql
+            - name: ROUTE_MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: ts-travel-mysql
+                  name: ts-route-mysql
                   key: username
-            - name: TRAVEL_MYSQL_PASSWORD
+            - name: ROUTE_MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ts-travel-mysql
+                  name: ts-route-mysql
                   key: password
-            - name: SPRING_CLOUD_NACOS_DISCOVERY_ENABLED
-              value: "true"
             - name: NACOS_ADDRS
-              value: "nacos-0.nacos-headless.default.svc.cluster.local:8848"
+              value: nacos.default.svc.cluster.local:8848
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -50,17 +46,17 @@ spec:
                   key: jwt-secret
           readinessProbe:
             httpGet:
-              path: /api/v1/travelservice/welcome
+              path: /api/v1/routeservice/welcome
               port: http
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 12
           livenessProbe:
             httpGet:
-              path: /api/v1/travelservice/welcome
+              path: /api/v1/routeservice/welcome
               port: http
-            initialDelaySeconds: 45
+            initialDelaySeconds: 60
             periodSeconds: 15
             timeoutSeconds: 3
           resources:

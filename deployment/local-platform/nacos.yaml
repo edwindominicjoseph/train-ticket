@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nacos-headless
+  namespace: default
+  labels:
+    app: nacos
+spec:
+  clusterIP: None
+  ports:
+    - port: 8848
+      name: client
+    - port: 9848
+      name: client-rpc
+    - port: 9849
+      name: raft-rpc
+  selector:
+    app: nacos
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nacos
+  namespace: default
+  labels:
+    app: nacos
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8848
+      targetPort: 8848
+      name: client
+    - port: 9848
+      targetPort: 9848
+      name: client-rpc
+    - port: 9849
+      targetPort: 9849
+      name: raft-rpc
+  selector:
+    app: nacos
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nacos
+  namespace: default
+spec:
+  serviceName: nacos-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nacos
+  template:
+    metadata:
+      labels:
+        app: nacos
+    spec:
+      containers:
+        - name: nacos
+          image: registry.registry.svc.cluster.local:5000/nacos-server:2.0.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MODE
+              value: "standalone"
+            - name: PREFER_HOST_MODE
+              value: "hostname"
+            - name: NACOS_SERVER_PORT
+              value: "8848"
+            - name: JVM_XMS
+              value: "256m"
+            - name: JVM_XMX
+              value: "512m"
+            - name: JVM_XMN
+              value: "128m"
+          ports:
+            - containerPort: 8848
+              name: client
+            - containerPort: 9848
+              name: client-rpc
+            - containerPort: 9849
+              name: raft-rpc
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          startupProbe:
+            tcpSocket:
+              port: 8848
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8848
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: 8848
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
