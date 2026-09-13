@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ts-route-service
+  namespace: train-ticket-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ts-route-service
+  template:
+    metadata:
+      labels:
+        app: ts-route-service
+    spec:
+      containers:
+        - name: ts-route-service
+          image: ts-route-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 11178
+          env:
+            - name: ROUTE_MYSQL_HOST
+              value: ts-route-mysql
+            - name: ROUTE_MYSQL_PORT
+              value: "3306"
+            - name: ROUTE_MYSQL_DATABASE
+              value: ts-route-mysql
+            - name: ROUTE_MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ts-route-mysql
+                  key: username
+            - name: ROUTE_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-route-mysql
+                  key: password
+            - name: NACOS_ADDRS
+              value: nacos.default.svc.cluster.local:8848
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-runtime
+                  key: jwt-secret
+          readinessProbe:
+            httpGet:
+              path: /api/v1/routeservice/welcome
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/v1/routeservice/welcome
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

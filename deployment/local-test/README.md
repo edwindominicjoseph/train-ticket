@@ -1,8 +1,6 @@
-# Local Travel-service CI/CD test environment
+# Local Travel and Route service CI/CD test environment
 
-This is the first deployable vertical slice: MySQL plus `ts-travel-service` on a local kind cluster. The same Git-SHA-tagged image is tested and deployed; Kubernetes does not rebuild it.
-Nacos discovery is disabled in this minimal slice because no discovery server is
-deployed. Add Nacos when cross-service discovery is introduced.
+This local kind environment runs the Travel and Route services with dedicated MySQL instances. The same Git-SHA-tagged images are tested and deployed; Kubernetes does not rebuild them. Both services use the Nacos instance bootstrapped by the local platform manifests.
 
 ## Prerequisites
 
@@ -59,6 +57,26 @@ Create these credentials before using `jenkins-ci/Jenkinsfile.local`:
 - `travel-jwt-test`: secret-text credential containing at least 32 random bytes
 
 The Jenkins agent must use the same kind kubeconfig and Docker daemon as the cluster.
+
+## Bootstrap Route service dependencies
+
+Jenkins can update Deployments but deliberately cannot manage Secrets, Services,
+or StatefulSets. Before the first Route pipeline run, create the test-only database
+Secret and apply the admin-owned resources (plus the initial Deployment):
+
+```bash
+kubectl -n train-ticket-test create secret generic ts-route-mysql \
+  --from-literal=username='<test user>' \
+  --from-literal=password='<test password>' \
+  --from-literal=root-password='<test root password>'
+kubectl apply -f deployment/local-test/route-mysql.yaml
+kubectl apply -f deployment/local-test/route-service.yaml
+kubectl apply -f deployment/local-test/route.yaml
+kubectl -n train-ticket-test rollout status statefulset/ts-route-mysql --timeout=300s
+```
+
+The Route workload reads its JWT from the existing `ts-travel-runtime` Secret.
+Do not commit the database Secret.
 
 ## Inspect or remove the environment
 

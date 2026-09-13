@@ -56,6 +56,7 @@ spec:
                 script {
                     env.GIT_SHA = sh(script: 'git rev-parse --short=12 HEAD', returnStdout: true).trim()
                     env.TRAVEL_IMAGE = "${env.REGISTRY}/ts-travel-service:${env.GIT_SHA}"
+                    env.ROUTE_IMAGE = "${env.REGISTRY}/ts-route-service:${env.GIT_SHA}"
                 }
             }
         }
@@ -73,7 +74,9 @@ spec:
         stage('Build and unit test') {
             steps {
                 container('maven') {
-                    sh 'mvn --batch-mode -pl ts-travel-service -am clean verify'
+                    withCredentials([string(credentialsId: 'travel-jwt-test', variable: 'JWT_SECRET')]) {
+                        sh 'mvn --batch-mode -pl ts-travel-service,ts-route-service -am clean verify'
+                    }
                 }
             }
             post {
@@ -92,13 +95,24 @@ spec:
                         --local dockerfile=ts-travel-service \
                         --opt filename=Dockerfile \
                         --output "type=image,name=$TRAVEL_IMAGE,push=true" \
-                        --metadata-file image-metadata.json
+                        --metadata-file travel-image-metadata.json
+                      buildctl --addr "$BUILDKIT_HOST" build \
+                        --frontend dockerfile.v0 \
+                        --local context=ts-route-service \
+                        --local dockerfile=ts-route-service \
+                        --opt filename=Dockerfile \
+                        --output "type=image,name=$ROUTE_IMAGE,push=true" \
+                        --metadata-file route-image-metadata.json
                     '''
                 }
                 container('python') {
                     script {
                         env.IMAGE_DIGEST = sh(
-                            script: "python3 -c \"import json; print(json.load(open('image-metadata.json'))['containerimage.digest'])\"",
+                            script: "python3 -c \"import json; print(json.load(open('travel-image-metadata.json'))['containerimage.digest'])\"",
+                            returnStdout: true
+                        ).trim()
+                        env.ROUTE_IMAGE_DIGEST = sh(
+                            script: "python3 -c \"import json; print(json.load(open('route-image-metadata.json'))['containerimage.digest'])\"",
                             returnStdout: true
                         ).trim()
                     }
@@ -111,7 +125,11 @@ spec:
                     sh '''kubectl set image --local -f deployment/local-test/travel.yaml \
                         ts-travel-service="$TRAVEL_IMAGE" -o yaml | \
                         kubectl apply -f -'''
+                    sh '''kubectl set image --local -f deployment/local-test/route.yaml \
+                        ts-route-service="$ROUTE_IMAGE" -o yaml | \
+                        kubectl apply -f -'''
                     sh 'kubectl -n "$TEST_NAMESPACE" rollout status deployment/ts-travel-service --timeout=300s'
+                    sh 'kubectl -n "$TEST_NAMESPACE" rollout status deployment/ts-route-service --timeout=300s'
                 }
             }
         }
@@ -120,6 +138,33 @@ spec:
                 container('curl') {
                     sh 'curl --fail --silent --show-error --max-time 10 http://ts-travel-service.train-ticket-test.svc.cluster.local:12346/api/v1/travelservice/welcome'
                     sh 'curl --fail --silent --show-error --max-time 10 http://ts-travel-service.train-ticket-test.svc.cluster.local:12346/api/v1/travelservice/trips >/dev/null'
+                    sh 'curl --fail --silent --show-error --max-time 10 http://ts-route-service.train-ticket-test.svc.cluster.local:11178/api/v1/routeservice/welcome'
+                    sh 'curl --fail --silent --show-error --max-time 10 http://ts-route-service.train-ticket-test.svc.cluster.local:11178/api/v1/routeservice/routes >/dev/null'
+                }
+            }
+        }
+        stage('Test route integration') {
+            steps {
+                container('python') {
+                    sh '''python3 - <<'PY'
+import json
+import urllib.parse
+import urllib.request
+
+travel_url = "http://ts-travel-service.train-ticket-test.svc.cluster.local:12346/api/v1/travelservice/routes/G1234"
+with urllib.request.urlopen(travel_url, timeout=10) as response:
+    payload = json.load(response)
+if payload.get("status") != 1:
+    raise SystemExit(f"travel route lookup failed: {payload}")
+
+query = urllib.parse.urlencode({"serviceName": "ts-route-service"})
+nacos_url = "http://nacos.default.svc.cluster.local:8848/nacos/v1/ns/instance/list?" + query
+with urllib.request.urlopen(nacos_url, timeout=10) as response:
+    instances = json.load(response).get("hosts", [])
+healthy = [instance for instance in instances if instance.get("healthy") and instance.get("port") == 11178]
+if not healthy:
+    raise SystemExit(f"Nacos has no healthy ts-route-service instance on port 11178: {instances}")
+PY'''
                 }
             }
         }
@@ -155,6 +200,11 @@ spec:
             container('kubectl') {
                 sh 'kubectl -n "$TEST_NAMESPACE" get pods -o wide || true'
                 sh 'kubectl -n "$TEST_NAMESPACE" logs deployment/ts-travel-service --tail=200 || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" logs deployment/ts-route-service --tail=200 || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" logs statefulset/ts-route-mysql --tail=200 || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" describe deployment/ts-route-service || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" describe statefulset/ts-route-mysql || true'
+                sh 'kubectl -n "$TEST_NAMESPACE" get events --sort-by=.lastTimestamp || true'
             }
         }
     }
