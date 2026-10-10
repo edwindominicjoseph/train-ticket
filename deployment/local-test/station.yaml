@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ts-station-service
+  namespace: train-ticket-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ts-station-service
+  template:
+    metadata:
+      labels:
+        app: ts-station-service
+    spec:
+      containers:
+        - name: ts-station-service
+          image: ts-station-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 12345
+          env:
+            - name: STATION_MYSQL_HOST
+              value: ts-station-mysql
+            - name: STATION_MYSQL_PORT
+              value: "3306"
+            - name: STATION_MYSQL_DATABASE
+              value: ts-station-mysql
+            - name: STATION_MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ts-station-mysql
+                  key: username
+            - name: STATION_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ts-station-mysql
+                  key: password
+            - name: NACOS_ADDRS
+              value: nacos.default.svc.cluster.local:8848
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-runtime
+                  key: jwt-secret
+          startupProbe:
+            httpGet:
+              path: /api/v1/stationservice/welcome
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/stationservice/welcome
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/v1/stationservice/welcome
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+

@@ -1,7 +1,6 @@
-FROM openresty/openresty:trusty
+FROM nginx:alpine
 
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
-
-COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY static /usr/share/nginx/html
+EXPOSE 8080

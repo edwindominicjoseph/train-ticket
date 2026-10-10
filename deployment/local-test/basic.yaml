@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ts-basic-service
+  namespace: train-ticket-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ts-basic-service
+  template:
+    metadata:
+      labels:
+        app: ts-basic-service
+    spec:
+      containers:
+        - name: ts-basic-service
+          image: ts-basic-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 15680
+          env:
+            - name: NACOS_ADDRS
+              value: nacos.default.svc.cluster.local:8848
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ts-travel-runtime
+                  key: jwt-secret
+          readinessProbe:
+            httpGet:
+              path: /api/v1/basicservice/welcome
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/v1/basicservice/welcome
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 384Mi

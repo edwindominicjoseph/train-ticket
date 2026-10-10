@@ -1,0 +1,12 @@
+  chore/local-prod-secret-file[m
+  feat/local-cicd-gitops[m
+  feat/local-k8s-travel[m
+  feat/persistent-argocd-local-access[m
+  feat/route-service-test-pipeline[m
+* [32mfeat/seat-service-test-pipeline[m
+  fix/jenkins-kubectl-agent[m
+  fix/reconcile-service-inventory[m
+  fix/travel-service-build[m
+  master[m
+  promote/travel-b102f3e81ba8[m
+  security/remove-hardcoded-credentials[m
