@@ -15,7 +15,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import edu.fudan.common.entity.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 @RunWith(JUnit4.class)
 public class SeatServiceImplTest {
@@ -40,25 +40,19 @@ public class SeatServiceImplTest {
         seat.setSeatType(2);
         seat.setStartStation("start_station");
         seat.setDestStation("dest_station");
-
-        Route route = new Route();
-        route.setStations(new ArrayList<>());
-        Response<Route> response1 = new Response<>(null, null, route);
-        ResponseEntity<Response<Route>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        seat.setTotalNum(100);
+        seat.setStations(Arrays.asList("start_station", "dest_station"));
 
         Response<LeftTicketInfo> response2 = new Response<>();
         ResponseEntity<Response<LeftTicketInfo>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
 
-        TrainType trainType = new TrainType();
-        trainType.setConfortClass(1);
-        Response<TrainType> response3 = new Response<>(null, null, trainType);
-        ResponseEntity<Response<TrainType>> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
                 Mockito.anyString(),
                 Mockito.any(HttpMethod.class),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1).thenReturn(re2).thenReturn(re3);
+                .thenReturn(re2);
+
         Response result = seatServiceImpl.distributeSeat(seat, headers);
         Assert.assertEquals("Use a new seat number!", result.getMsg());
     }
@@ -70,25 +64,19 @@ public class SeatServiceImplTest {
         seat.setSeatType(3);
         seat.setStartStation("start_station");
         seat.setDestStation("dest_station");
-
-        Route route = new Route();
-        route.setStations(new ArrayList<>());
-        Response<Route> response1 = new Response<>(null, null, route);
-        ResponseEntity<Response<Route>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        seat.setTotalNum(100);
+        seat.setStations(Arrays.asList("start_station", "dest_station"));
 
         Response<LeftTicketInfo> response2 = new Response<>();
         ResponseEntity<Response<LeftTicketInfo>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
 
-        TrainType trainType = new TrainType();
-        trainType.setEconomyClass(1);
-        Response<TrainType> response3 = new Response<>(null, null, trainType);
-        ResponseEntity<Response<TrainType>> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
                 Mockito.anyString(),
                 Mockito.any(HttpMethod.class),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1).thenReturn(re2).thenReturn(re3);
+                .thenReturn(re2);
+
         Response result = seatServiceImpl.distributeSeat(seat, headers);
         Assert.assertEquals("Use a new seat number!", result.getMsg());
     }
@@ -100,32 +88,26 @@ public class SeatServiceImplTest {
         seat.setSeatType(2);
         seat.setStartStation("start_station");
         seat.setDestStation("dest_station");
-
-        Route route = new Route();
-        route.setStations( new ArrayList<String>(){{ add("start_place"); }} );
-        Response<Route> response1 = new Response<>(null, null, route);
-        ResponseEntity<Response<Route>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        seat.setTotalNum(100);
+        seat.setStations(Arrays.asList("start_station", "dest_station"));
 
         Response<LeftTicketInfo> response2 = new Response<>();
         ResponseEntity<Response<LeftTicketInfo>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
-
-        TrainType trainType = new TrainType();
-        trainType.setConfortClass(1);
-        Response<TrainType> response3 = new Response<>(null, null, trainType);
-        ResponseEntity<Response<TrainType>> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
 
         Config config = new Config();
         config.setValue("0");
         Response<Config> response4 = new Response<>(null, null, config);
         ResponseEntity<Response<Config>> re4 = new ResponseEntity<>(response4, HttpStatus.OK);
+
         Mockito.when(restTemplate.exchange(
                 Mockito.anyString(),
                 Mockito.any(HttpMethod.class),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1).thenReturn(re2).thenReturn(re3).thenReturn(re4);
+                .thenReturn(re2).thenReturn(re4);
+
         Response result = seatServiceImpl.getLeftTicketOfInterval(seat, headers);
-        Assert.assertEquals(new Response<>(1, "Get Left Ticket of Internal Success", 1), result);
+        Assert.assertEquals(new Response<>(1, "Get Left Ticket of Internal Success", 0), result);
     }
 
     @Test
@@ -135,32 +117,25 @@ public class SeatServiceImplTest {
         seat.setSeatType(3);
         seat.setStartStation("start_station");
         seat.setDestStation("dest_station");
-
-        Route route = new Route();
-        route.setStations( new ArrayList<String>(){{ add("start_place"); }} );
-        Response<Route> response1 = new Response<>(null, null, route);
-        ResponseEntity<Response<Route>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        seat.setTotalNum(100);
+        seat.setStations(Arrays.asList("start_station", "dest_station"));
 
         Response<LeftTicketInfo> response2 = new Response<>();
         ResponseEntity<Response<LeftTicketInfo>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
-
-        TrainType trainType = new TrainType();
-        trainType.setEconomyClass(1);
-        Response<TrainType> response3 = new Response<>(null, null, trainType);
-        ResponseEntity<Response<TrainType>> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
 
         Config config = new Config();
         config.setValue("0");
         Response<Config> response4 = new Response<>(null, null, config);
         ResponseEntity<Response<Config>> re4 = new ResponseEntity<>(response4, HttpStatus.OK);
+
         Mockito.when(restTemplate.exchange(
                 Mockito.anyString(),
                 Mockito.any(HttpMethod.class),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1).thenReturn(re2).thenReturn(re3).thenReturn(re4);
-        Response result = seatServiceImpl.getLeftTicketOfInterval(seat, headers);
-        Assert.assertEquals(new Response<>(1, "Get Left Ticket of Internal Success", 1), result);
-    }
+                .thenReturn(re2).thenReturn(re4);
 
+        Response result = seatServiceImpl.getLeftTicketOfInterval(seat, headers);
+        Assert.assertEquals(new Response<>(1, "Get Left Ticket of Internal Success", 0), result);
+    }
 }
