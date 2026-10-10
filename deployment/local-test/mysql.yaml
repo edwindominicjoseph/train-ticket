@@ -8,7 +8,7 @@ spec:
     app: ts-travel-mysql
   ports:
     - name: mysql
-      port: 3311
+      port: 3307
       targetPort: mysql
 ---
 apiVersion: apps/v1
